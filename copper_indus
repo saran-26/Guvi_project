@@ -1,0 +1,59 @@
+# Import libraries
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error, r2_score
+import matplotlib.pyplot as plt
+
+# Step 1: Data Simulation (if no dataset is available)
+def simulate_data(num_samples=1000):
+    np.random.seed(42)
+    temperature = np.random.uniform(10, 100, num_samples)  # in Celsius
+    humidity = np.random.uniform(20, 90, num_samples)  # in percentage
+    chemical_exposure = np.random.uniform(0, 10, num_samples)  # arbitrary scale
+    # Corrosion rate: A synthetic formula for demonstration
+    corrosion_rate = (
+        0.05 * temperature + 0.1 * humidity + 0.3 * chemical_exposure + np.random.normal(0, 2, num_samples)
+    )
+    return pd.DataFrame({
+        'temperature': temperature,
+        'humidity': humidity,
+        'chemical_exposure': chemical_exposure,
+        'corrosion_rate': corrosion_rate
+    })
+
+# Generate or load data
+data = simulate_data()
+print(data.head())
+
+# Step 2: Data Preprocessing
+X = data[['temperature', 'humidity', 'chemical_exposure']]
+y = data['corrosion_rate']
+
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Step 3: Train the Model
+model = RandomForestRegressor(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+
+# Step 4: Model Evaluation
+y_pred = model.predict(X_test)
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
+print(f"Mean Squared Error: {mse}")
+print(f"R^2 Score: {r2}")
+
+# Step 5: Visualization of Results
+plt.scatter(y_test, y_pred, alpha=0.7, color='blue')
+plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'k--', lw=2, color='red')
+plt.xlabel("Actual Corrosion Rate")
+plt.ylabel("Predicted Corrosion Rate")
+plt.title("Actual vs Predicted Corrosion Rate")
+plt.show()
+
+# Step 6: Save the Model (optional)
+import joblib
+joblib.dump(model, 'copper_corrosion_model.pkl')
